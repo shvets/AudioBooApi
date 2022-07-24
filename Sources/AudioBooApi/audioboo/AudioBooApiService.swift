@@ -179,7 +179,15 @@ open class AudioBooApiService {
 
     let pagePath = getPagePath(path: "", page: page)
 
-   let newUrl = AudioBooApiService.SiteUrl + "/" + url
+    var newUrl = ""
+
+    if url.starts(with: "http://") || url.starts(with: "https://") {
+      newUrl = url
+    }
+    else {
+      newUrl = AudioBooApiService.SiteUrl + "/" + url
+    }
+
     let path = AudioBooApiService.getURLPathOnly("\(newUrl)\(pagePath)", baseUrl: AudioBooApiService.SiteUrl)
     
     if let document = try getDocument(path) {
