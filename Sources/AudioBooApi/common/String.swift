@@ -6,11 +6,11 @@ extension String {
   }
 
   public func trim() -> String {
-    self.trimmingCharacters(in: .whitespaces)
+    trimmingCharacters(in: .whitespaces)
   }
 
   public func addingPercentEncoding(withAllowedCharacters characterSet: CharacterSet, using encoding: String.Encoding) -> String {
-    let stringData = self.data(using: encoding, allowLossyConversion: true) ?? Data()
+    let stringData = data(using: encoding, allowLossyConversion: true) ?? Data()
 
     let percentEscaped = stringData.map {byte->String in
       if characterSet.contains(UnicodeScalar(byte)) {
@@ -34,6 +34,25 @@ extension String {
 
     let windowsCyrillic = String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(encoding))
 
-    return self.addingPercentEncoding(withAllowedCharacters: rfc3986Unreserved,  using: windowsCyrillic)
+    return addingPercentEncoding(withAllowedCharacters: rfc3986Unreserved,  using: windowsCyrillic)
   }
+
+//  func replaceFirst(of pattern: String, with replacement: String) -> String {
+//    if let range = self.range(of: pattern) {
+//      return self.replacingCharacters(in: range, with: replacement)
+//    } else {
+//      return self
+//    }
+//  }
+//
+//  func replaceAll(of pattern: String, with replacement: String, options: NSRegularExpression.Options = []) -> String {
+//    do {
+//      let regex = try NSRegularExpression(pattern: pattern, options: [])
+//      let range = NSRange(0..<utf16.count)
+//      return regex.stringByReplacingMatches(in: self, options: [],
+//          range: range, withTemplate: replacement)
+//    } catch {
+//      return self
+//    }
+//  }
 }

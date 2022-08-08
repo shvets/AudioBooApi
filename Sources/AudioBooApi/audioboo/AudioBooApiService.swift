@@ -28,7 +28,7 @@ open class AudioBooApiService {
     var result = [[String: String]]()
 
     if let document = try getDocument() {
-      let items = try document.select("div[class=content] div div a[class=alfavit]")
+      let items = try document.select("div[class=left-col] a[class=alfavit]")
 
       for item in items.array() {
         let name = try item.text()
@@ -108,7 +108,7 @@ open class AudioBooApiService {
     var groups: [String: [NameClassifier.Item]] = [:]
 
     if let document = try getDocument("tags/") {
-      let items = try document.select("div[class=content] div[id=dle-content] a")
+      let items = try document.select("div[id=dle-content] div[id=dle-content] span[class=clouds_xsmall] a")
 
       for item in items.array() {
         let href = try item.attr("href")
@@ -154,12 +154,12 @@ open class AudioBooApiService {
     let path = getPagePath(path: "", page: page)
 
     if let document = try getDocument(path) {
-      let items = try document.select("div[id=dle-content] div[class=biography-main]")
+      let items = try document.select("div[id=dle-content] div[id=dle-content] article[class=card d-flex]")
 
       for item: Element in items.array() {
-        let name = try item.select("div[class=biography-title] h2 a").text()
-        let href = try item.select("div div[class=biography-image] a").attr("href")
-        var thumb = try item.select("div div[class=biography-image] a img").attr("src")
+        let name = try item.select("div h2[class=card__title] a").text()
+        let href = try item.select("div h2[class=card__title] a").attr("href")
+        var thumb = try item.select("a[class=card__img img-fit-cover] img").attr("src")
 
         let index = thumb.find("https://")
 
@@ -191,21 +191,20 @@ open class AudioBooApiService {
     let path = AudioBooApiService.getURLPathOnly("\(newUrl)\(pagePath)", baseUrl: AudioBooApiService.SiteUrl)
     
     if let document = try getDocument(path) {
-      let items = try document.select("div[class=biography-main]")
+      let items = try document.select("div[id=dle-content] div[id=dle-content] article")
 
       for item: Element in items.array() {
-        let name = try item.select("div[class=biography-title] h2 a").text()
-        let href = try item.select("div div[class=biography-image] a").attr("href")
-        let thumb = try item.select("div div[class=biography-image] a img").attr("src")
+        let name = try  item.select("a img").attr("alt")
+        let href = try item.select("a").attr("href")
+        let thumb = try item.select("a img").attr("src")
 
-        let content = try item.select("div[class=biography-content]").text()
+        //let content = try item.select("div[class=biography-content]").text()
 
-        let elements = try item.select("div[class=biography-content] div").array()
+        //let elements = try item.select("div[class=biography-content] div").array()
 
-        let rating = try elements[0].select("div[class=rating] ul li[class=current-rating]").text()
+        //let rating = try elements[0].select("div[class=rating] ul li[class=current-rating]").text()
 
-        result.append(["type": "book", "id": href, "name": name, "thumb": AudioBooApiService.SiteUrl + thumb,
-                       "content": content, "rating": rating])
+        result.append(["type": "book", "id": href, "name": name, "thumb": AudioBooApiService.SiteUrl + thumb])
       }
     }
 
