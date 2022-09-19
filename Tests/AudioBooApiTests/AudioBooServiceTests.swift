@@ -48,15 +48,16 @@ class AudioBooServiceTests: XCTestCase {
   }
 
   func testGetBooks() throws {
-    let letters = try subject.getLetters()
+//    let letters = try subject.getLetters()
+//
+//    let letterId = letters[0]["id"]!
+//
+//    let authors = try subject.getAuthorsByLetter(letterId)
+//
+//    let url = AudioBooApiService.SiteUrl + "/" + (authors[0].value)[0].id
 
-    let letterId = letters[0]["id"]!
-
-    let authors = try subject.getAuthorsByLetter(letterId)
-
-    let url = AudioBooApiService.SiteUrl + "/" + (authors[0].value)[0].id
-
-    let result = try self.subject.getBooks(url)
+    let url = AudioBooApiService.SiteUrl + "/" + "/xfsearch/avtora/Пратчетт Терри"
+    let result = try subject.getBooks(url, page: 2)
 
     print(try result.prettify())
 

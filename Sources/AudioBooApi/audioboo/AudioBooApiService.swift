@@ -90,7 +90,7 @@ open class AudioBooApiService {
     var letters: [[String: String]] = []
 
     if let document = try getDocument("tags/") {
-      let items = try document.select("div[class=content] div[id=dle-content] h3")
+      let items = try document.select("div[id=dle-content] div[id=dle-content] div[class=clearfix cloud-tags] h3")
 
       for item in items.array() {
         let name = try item.text().uppercased()
@@ -154,11 +154,18 @@ open class AudioBooApiService {
     let path = getPagePath(path: "", page: page)
 
     if let document = try getDocument(path) {
-      let items = try document.select("div[id=dle-content] div[id=dle-content] article[class=card d-flex]")
+      //let items = try document.select("div[id=dle-content] div[id=dle-content] article")
+     let items = try document.select("div[id=dle-content] div[id=dle-content] article[class=card d-flex]")
 
       for item: Element in items.array() {
-        let name = try item.select("div h2[class=card__title] a").text()
-        let href = try item.select("div h2[class=card__title] a").attr("href")
+        var name = try item.select("a")[0].text()
+        var href = try item.select("a").attr("href")
+
+        if name.isEmpty {
+          name = try item.select("div h2[class=card__title] a").text()
+          href = try item.select("div h2[class=card__title] a").attr("href")
+        }
+
         var thumb = try item.select("a[class=card__img img-fit-cover] img").attr("src")
 
         let index = thumb.find("https://")
@@ -188,7 +195,7 @@ open class AudioBooApiService {
       newUrl = AudioBooApiService.SiteUrl + "/" + url
     }
 
-    let path = AudioBooApiService.getURLPathOnly("\(newUrl)\(pagePath)", baseUrl: AudioBooApiService.SiteUrl)
+    let path = AudioBooApiService.getURLPathOnly("\(newUrl)/\(pagePath)", baseUrl: AudioBooApiService.SiteUrl)
     
     if let document = try getDocument(path) {
       let items = try document.select("div[id=dle-content] div[id=dle-content] article")
