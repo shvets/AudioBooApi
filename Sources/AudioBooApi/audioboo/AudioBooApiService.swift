@@ -108,7 +108,7 @@ open class AudioBooApiService {
     var groups: [String: [NameClassifier.Item]] = [:]
 
     if let document = try getDocument("tags/") {
-      let items = try document.select("div[id=dle-content] div[id=dle-content] span[class=clouds_xsmall] a")
+      let items = try document.select("div[id=dle-content] div[id=dle-content] span[class^=clouds] a")
 
       for item in items.array() {
         let href = try item.attr("href")
@@ -260,8 +260,9 @@ open class AudioBooApiService {
 
     let path = AudioBooApiService.getURLPathOnly(url, baseUrl: AudioBooApiService.ArchiveUrl)
 
-    if let response = try archiveClient.request(path), let data = response.data,
-       let document = try toDocument(data: data, encoding: .utf8) {
+    let response = try archiveClient.request(path)
+
+    if let data = response.data, let document = try toDocument(data: data, encoding: .utf8) {
 
       let items = try document.select("input[class=js-play8-playlist]")
 
@@ -329,10 +330,9 @@ open class AudioBooApiService {
     var queryItems: Set<URLQueryItem> = []
     queryItems.insert(URLQueryItem(name: "mod", value: "search"))
 
-    if let response = try apiClient.request(path, method: .post, queryItems: queryItems,
-            headers: headers, body: body),
-       let data = response.data,
-       let document = try toDocument(data: data) {
+    let response = try apiClient.request(path, method: .post, queryItems: queryItems, headers: headers, body: body)
+
+    if let data = response.data, let document = try toDocument(data: data) {
       let items = try document.select("a")
 
       for item in items.array() {
@@ -350,7 +350,9 @@ open class AudioBooApiService {
   public func getDocument(_ path: String = "") throws -> Document? {
     var document: Document? = nil
 
-    if let response = try apiClient.request(path), let data = response.data {
+    let response = try apiClient.request(path)
+
+    if let data = response.data {
       document = try data.toDocument(encoding: .utf8)
     }
 
