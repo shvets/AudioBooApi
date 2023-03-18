@@ -5,49 +5,49 @@ import XCTest
 class AudioBooServiceTests: XCTestCase {
   var subject = AudioBooApiService()
 
-  func testGetLetters() throws {
-    let result = try subject.getLetters()
+  func testGetLetters() async throws {
+    let result = try await subject.getLetters()
 
     print(try result.prettify())
 
     XCTAssert(result.count > 0)
   }
 
-  func testGetAuthorsByLetters() throws {
-    let letters = try subject.getLetters()
+  func testGetAuthorsByLetters() async throws {
+    let letters = try await subject.getLetters()
 
     XCTAssert(letters.count > 0)
 
     let id = letters[0]["id"]!
 
-    let result = try subject.getAuthorsByLetter(id)
+    let result = try await subject.getAuthorsByLetter(id)
 
     print(try result.prettify())
 
     XCTAssert(result.count > 0)
   }
 
-  func testGetPerformersLetters() throws {
-    let letters = try subject.getPerformersLetters()
+  func testGetPerformersLetters() async throws {
+    let letters = try await subject.getPerformersLetters()
 
     XCTAssert(letters.count > 0)
   }
 
-  func testGetPerformers() throws {
-    let performers = try subject.getPerformers()
+  func testGetPerformers() async throws {
+    let performers = try await subject.getPerformers()
 
     XCTAssert(performers.count > 0)
   }
 
-  func testGetAllBooks() throws {
-    let result = try subject.getAllBooks()
+  func testGetAllBooks() async throws {
+    let result = try await subject.getAllBooks()
 
     print(try result.prettify())
 
     XCTAssert(result.count > 0)
   }
 
-  func testGetBooks() throws {
+  func testGetBooks() async throws {
 //    let letters = try subject.getLetters()
 //
 //    let letterId = letters[0]["id"]!
@@ -57,25 +57,25 @@ class AudioBooServiceTests: XCTestCase {
 //    let url = AudioBooApiService.SiteUrl + "/" + (authors[0].value)[0].id
 
     let url = AudioBooApiService.SiteUrl + "/" + "/xfsearch/avtora/Пратчетт Терри"
-    let result = try subject.getBooks(url, page: 2)
+    let result = try await subject.getBooks(url, page: 2)
 
     print(try result.prettify())
 
     XCTAssert(result.count > 0)
   }
 
-  func testGetPlaylistUrls() throws {
-    let letters = try subject.getLetters()
+  func testGetPlaylistUrls() async throws {
+    let letters = try await subject.getLetters()
 
     if let letterId = letters[0]["id"] {
-      let authors = try subject.getAuthorsByLetter(letterId)
+      let authors = try await subject.getAuthorsByLetter(letterId)
 
       let url = AudioBooApiService.SiteUrl + "/" + (authors[4].value)[0].id
 
-      let books = try self.subject.getBooks(url)
+      let books = try await self.subject.getBooks(url)
 
       if let bookId = books[0]["id"] {
-        let result = try self.subject.getPlaylistUrls(bookId)
+        let result = try await self.subject.getPlaylistUrls(bookId)
 
         print(try result.prettify())
 
@@ -84,12 +84,12 @@ class AudioBooServiceTests: XCTestCase {
     }
   }
 
-  func testGetAudioTracks() throws {
+  func testGetAudioTracks() async throws {
     let url = "http://audioboo.ru/voina/26329-sushinskiy-bogdan-chernye-komissary.html"
 
-    let playlistUrls = try subject.getPlaylistUrls(url)
+    let playlistUrls = try await subject.getPlaylistUrls(url)
 
-    let list = try subject.getAudioTracks(playlistUrls[0])
+    let list = try await subject.getAudioTracks(playlistUrls[0])
 
     print(try list.prettify())
 
@@ -101,10 +101,10 @@ class AudioBooServiceTests: XCTestCase {
     //print(file)
   }
 
-  func testGetAudioTracksNew() throws {
+  func testGetAudioTracksNew() async throws {
     let url = "https://audioboo.org/klassika/54429-o-genri-poslednij-list.html"
 
-    let list = try subject.getAudioTracksNew(url)
+    let list = try await subject.getAudioTracksNew(url)
 
     print(try list.prettify())
 
@@ -112,10 +112,10 @@ class AudioBooServiceTests: XCTestCase {
     XCTAssert(list.count > 0)
   }
 
-  func testSearch() throws {
+  func testSearch() async throws {
     let query = "пратчетт"
 
-    let result = try subject.search(query)
+    let result = try await subject.search(query)
 
     print(try result.prettify())
   }

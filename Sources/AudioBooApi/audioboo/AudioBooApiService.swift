@@ -27,7 +27,7 @@ open class AudioBooApiService {
   public func getLetters() throws -> [[String: String]] {
     var result = [[String: String]]()
 
-    if let document = try getDocument() {
+    if let document = try getDocumentSync() {
       let items = try document.select("div[class=left-col] a[class=alfavit]")
 
       for item in items.array() {
@@ -45,7 +45,7 @@ open class AudioBooApiService {
   public func getAuthorsByLetter(_ path: String) throws -> [NameClassifier.ItemsGroup] {
     var groups: [String: [NameClassifier.Item]] = [:]
 
-    if let document = try getDocument(path) {
+    if let document = try getDocumentSync(path) {
       let items = try document.select("div[class=news-item-content] div a")
 
       for item in items.array() {
@@ -89,7 +89,7 @@ open class AudioBooApiService {
   public func getPerformersLetters() throws -> [[String: String]] {
     var letters: [[String: String]] = []
 
-    if let document = try getDocument("tags/") {
+    if let document = try getDocumentSync("tags/") {
       let items = try document.select("div[id=dle-content] div[id=dle-content] div[class=clearfix cloud-tags] h3")
 
       for item in items.array() {
@@ -107,7 +107,7 @@ open class AudioBooApiService {
   public func getPerformers() throws -> [NameClassifier.ItemsGroup] {
     var groups: [String: [NameClassifier.Item]] = [:]
 
-    if let document = try getDocument("tags/") {
+    if let document = try getDocumentSync("tags/") {
       let items = try document.select("div[id=dle-content] div[id=dle-content] span[class^=clouds] a")
 
       for item in items.array() {
@@ -117,7 +117,7 @@ open class AudioBooApiService {
 
         let index1 = name.startIndex
         let index2 = name.count > 2 ? name.index(name.startIndex, offsetBy: 3) :
-          name.index(name.startIndex, offsetBy: 2)
+            name.index(name.startIndex, offsetBy: 2)
 
         let groupName = name[index1 ..< index2].uppercased()
 
@@ -148,14 +148,14 @@ open class AudioBooApiService {
     return NameClassifier().mergeSmallGroups(newGroups)
   }
 
-  public func getAllBooks(page: Int=1) throws -> [BookItem] {
+  public func getAllBooks(page: Int=1) async throws -> [BookItem] {
     var result = [BookItem]()
 
     let path = getPagePath(path: "", page: page)
 
-    if let document = try getDocument(path) {
+    if let document = try await getDocument(path) {
       //let items = try document.select("div[id=dle-content] div[id=dle-content] article")
-     let items = try document.select("div[id=dle-content] div[id=dle-content] article[class=card d-flex]")
+      let items = try document.select("div[id=dle-content] div[id=dle-content] article[class=card d-flex]")
 
       for item: Element in items.array() {
         var name = try item.select("a")[0].text()
@@ -181,7 +181,7 @@ open class AudioBooApiService {
     return result
   }
 
-  public func getBooks(_ url: String, page: Int=1) throws -> [BookItem] {
+  public func getBooks(_ url: String, page: Int=1) async throws -> [BookItem] {
     var result = [BookItem]()
 
     let pagePath = getPagePath(path: "", page: page)
@@ -196,8 +196,8 @@ open class AudioBooApiService {
     }
 
     let path = AudioBooApiService.getURLPathOnly("\(newUrl)/\(pagePath)", baseUrl: AudioBooApiService.SiteUrl)
-    
-    if let document = try getDocument(path) {
+
+    if let document = try await getDocument(path) {
       let items = try document.select("div[id=dle-content] div[id=dle-content] article")
 
       for item: Element in items.array() {
@@ -218,12 +218,12 @@ open class AudioBooApiService {
     return result
   }
 
-  public func getPlaylistUrls(_ url: String) throws -> [String] {
+  public func getPlaylistUrls(_ url: String) async throws -> [String] {
     var result = [String]()
 
     let path = AudioBooApiService.getURLPathOnly(url, baseUrl: AudioBooApiService.SiteUrl)
 
-    if let document = try getDocument(path) {
+    if let document = try await getDocument(path) {
       let items = try document.select("object")
 
       if items.count > 0 {
@@ -236,10 +236,10 @@ open class AudioBooApiService {
 //
 //        if script.count > 0 {
 //          let content = try script[0].text()
-//          
+//
 //          let index1 = content.find("file:")
 //          let index2 = content.find("});")
-//          
+//
 //          if let index1 = index1, let index2 = index2 {
 //            let text = content.substring(from: index1, to: index2)
 //          }
@@ -284,7 +284,7 @@ open class AudioBooApiService {
 
     let path = AudioBooApiService.getURLPathOnly(url, baseUrl: AudioBooApiService.ArchiveUrl)
 
-    if let document = try getDocument(path) {
+    if let document = try getDocumentSync(path) {
       let scripts = try document.select("script")
 
       for script in scripts {
@@ -321,7 +321,7 @@ open class AudioBooApiService {
     let path = "engine/ajax/controller.php"
 
     let content = "query=\(query)" +
-            "&user_hash=e49f7fb6c307f5918acf0a8ff5ad4f209e01e36a"
+        "&user_hash=e49f7fb6c307f5918acf0a8ff5ad4f209e01e36a"
     let body = content.data(using: .utf8, allowLossyConversion: false)
 
     var headers: Set<HttpHeader> = []
@@ -347,7 +347,19 @@ open class AudioBooApiService {
     return result
   }
 
-  public func getDocument(_ path: String = "") throws -> Document? {
+  public func getDocument(_ path: String = "") async throws -> Document? {
+    var document: Document? = nil
+
+    let response = try await apiClient.requestAsync(path)
+
+    if let data = response.data {
+      document = try data.toDocument(encoding: .utf8)
+    }
+
+    return document
+  }
+
+  public func getDocumentSync(_ path: String = "") throws -> Document? {
     var document: Document? = nil
 
     let response = try apiClient.request(path)
