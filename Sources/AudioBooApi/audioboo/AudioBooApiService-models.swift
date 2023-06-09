@@ -20,6 +20,13 @@ extension AudioBooApiService {
     public let type: String
     public let height: String
     public let width: String
+
+    public init(file: String, type: String, height: String, width: String) {
+      self.file = file
+      self.type = type
+      self.height = height
+      self.width = width
+    }
   }
 
   public struct BooTrack2: Codable {
@@ -53,6 +60,15 @@ extension AudioBooApiService {
 //      return "\(AudioBooAPI.SiteUrl)\(image)"
 //    }
 //  }
+
+    public init(title: String, orig: String, image: String, duration: String, sources: [BooSource]) throws {
+      self.title = title
+      self.orig = orig
+      self.image = image
+      self.duration = duration
+      self.sources = sources
+    }
+
 
     public init(from decoder: Decoder) throws {
       title = try decoder.decode("title")
