@@ -54,7 +54,15 @@ open class AudioBooApiService {
 
         if !name.isEmpty && !name.hasPrefix("ALIAS") && Int(name) == nil {
           let index1 = name.startIndex
-          let index2 = name.index(name.startIndex, offsetBy: 3)
+
+          var index2: String.Index
+
+          if name.count > 2 {
+            index2 = name.index(name.startIndex, offsetBy: 3)
+          }
+          else {
+            index2 = name.index(name.startIndex, offsetBy: name.count)
+          }
 
           let groupName = name[index1 ..< index2].uppercased()
 
@@ -315,36 +323,70 @@ open class AudioBooApiService {
     return result
   }
 
-  public func search(_ query: String, page: Int=1) throws -> [[String: String]] {
+  public func search(_ query: String, page: Int=1) async throws -> [[String: String]] {
     var result = [[String: String]]()
 
     let path = "engine/ajax/controller.php"
 
     let content = "query=\(query)" +
-        "&user_hash=e49f7fb6c307f5918acf0a8ff5ad4f209e01e36a"
+        "&user_hash=44b399630c1d719b937474f99676e6e60accf1d8"
     let body = content.data(using: .utf8, allowLossyConversion: false)
+
+    let cookie = try getCookie()
+    //print(cookie)
 
     var headers: Set<HttpHeader> = []
     headers.insert(HttpHeader(field: "content-type", value: "application/x-www-form-urlencoded; charset=UTF-8"))
+    headers.insert(HttpHeader(field: "cookie", value: cookie!))
 
     var queryItems: Set<URLQueryItem> = []
     queryItems.insert(URLQueryItem(name: "mod", value: "search"))
 
-    let response = try apiClient.request(path, method: .post, queryItems: queryItems, headers: headers, body: body)
+    //for index in 1...10 {
+      let response = try await apiClient.requestAsync(path, method: .post, queryItems: queryItems, headers: headers, body: body)
 
-    if let data = response.data, let document = try toDocument(data: data) {
-      let items = try document.select("a")
+      if let data = response.data, let document = try toDocument(data: data) {
+        print(try document.text())
 
-      for item in items.array() {
-        let name = try item.text()
+        if try document.text().starts(with: "Ваша пользовательская сессия истекла") {
+          let items = try document.select("a")
 
-        let href = try item.attr("href")
+          for item in items.array() {
+            let name = try item.text()
 
-        result.append(["type": "book", "id": href, "name": name])
+            let href = try item.attr("href")
+
+            result.append(["type": "book", "id": href, "name": name])
+          }
+        }
+        else {
+          //  break
+        }
+      }
+    //}
+
+    return result
+  }
+
+  func getCookie() throws -> String?  {
+    let headers: Set<HttpHeader> = [
+      HttpHeader(field: "user-agent", value:
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36")
+    ]
+
+    var cookie: String = ""
+
+    let response = try apiClient.request(headers: headers)
+
+    if let cookies = HTTPCookieStorage.shared.cookies {
+      for c in cookies {
+        //if c.name == "PHPSESSID" {
+          cookie += "\(c.name)=\(c.value); "
+        //}
       }
     }
 
-    return result
+    return cookie
   }
 
   public func getDocument(_ path: String = "") async throws -> Document? {
