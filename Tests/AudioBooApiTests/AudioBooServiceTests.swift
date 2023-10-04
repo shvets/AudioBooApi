@@ -5,36 +5,36 @@ import XCTest
 class AudioBooServiceTests: XCTestCase {
   var subject = AudioBooApiService()
 
-  func testGetLetters() async throws {
-    let result = try await subject.getLetters()
+  func testGetLetters() throws {
+    let result = try subject.getLetters()
 
     print(try result.prettify())
 
     XCTAssert(result.count > 0)
   }
 
-  func testGetAuthorsByLetters() async throws {
-    let letters = try await subject.getLetters()
+  func testGetAuthorsByLetters() throws {
+    let letters = try subject.getLetters()
 
     XCTAssert(letters.count > 0)
 
     let id = letters[0]["id"]!
 
-    let result = try await subject.getAuthorsByLetter(id)
+    let result = try subject.getAuthorsByLetter(id)
 
     print(try result.prettify())
 
     XCTAssert(result.count > 0)
   }
 
-  func testGetPerformersLetters() async throws {
-    let letters = try await subject.getPerformersLetters()
+  func testGetPerformersLetters() throws {
+    let letters = try subject.getPerformersLetters()
 
     XCTAssert(letters.count > 0)
   }
 
-  func testGetPerformers() async throws {
-    let performers = try await subject.getPerformers()
+  func testGetPerformers() throws {
+    let performers = try subject.getPerformers()
 
     XCTAssert(performers.count > 0)
   }
@@ -65,10 +65,10 @@ class AudioBooServiceTests: XCTestCase {
   }
 
   func testGetPlaylistUrls() async throws {
-    let letters = try await subject.getLetters()
+    let letters = try subject.getLetters()
 
     if let letterId = letters[0]["id"] {
-      let authors = try await subject.getAuthorsByLetter(letterId)
+      let authors = try subject.getAuthorsByLetter(letterId)
 
       let url = AudioBooApiService.SiteUrl + "/" + (authors[4].value)[0].id
 
@@ -86,10 +86,11 @@ class AudioBooServiceTests: XCTestCase {
 
   func testGetAudioTracks() async throws {
     let url = "http://audioboo.ru/voina/26329-sushinskiy-bogdan-chernye-komissary.html"
+    //let url = "https://audioboo.org/proza/71729-holder-njensi-vne-dvenadcati-shagov-ili-leto-s-anonimnymi-alkogolikami.html"
 
     let playlistUrls = try await subject.getPlaylistUrls(url)
 
-    let list = try await subject.getAudioTracks(playlistUrls[0])
+    let list = try subject.getAudioTracks(playlistUrls[0])
 
     print(try list.prettify())
 
@@ -102,9 +103,10 @@ class AudioBooServiceTests: XCTestCase {
   }
 
   func testGetAudioTracksNew() async throws {
-    let url = "https://audioboo.org/klassika/54429-o-genri-poslednij-list.html"
+    //let url = "https://audioboo.org/klassika/54429-o-genri-poslednij-list.html"
+    let url = "https://audioboo.org/proza/71729-holder-njensi-vne-dvenadcati-shagov-ili-leto-s-anonimnymi-alkogolikami.html"
 
-    let list = try await subject.getAudioTracksNew(url)
+    let list = try subject.getAudioTracksNew(url)
 
     print(try list.prettify())
 

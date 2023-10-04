@@ -2,6 +2,17 @@ import Foundation
 import SwiftSoup
 import SimpleHttpClient
 
+class DelegateToHandle302: NSObject, URLSessionTaskDelegate {
+  var lastLocation: String? = nil
+
+  func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
+                  newRequest request: URLRequest) async -> URLRequest? {
+    lastLocation = response.allHeaderFields["Location"] as? String
+
+    return request
+  }
+}
+
 open class AudioBooApiService {
   public static let SiteUrl = "https://audioboo.org"
   public static let ArchiveUrl = "https://archive.org"
@@ -22,6 +33,40 @@ open class AudioBooApiService {
     else {
       return "\(path)page/\(page)/"
     }
+  }
+
+  func getHeaders(_ referer: String="") -> Set<HttpHeader> {
+    var headers: Set<HttpHeader> = []
+
+    if !referer.isEmpty {
+      headers.insert(HttpHeader(field: "Referer", value: referer))
+    }
+
+    return headers
+  }
+
+  func getRedirectLocation(path: String, url: String) throws -> String? {
+    let delegate = DelegateToHandle302()
+
+    let semaphore = DispatchSemaphore(value: 0)
+
+    Task {
+      if path.hasPrefix("/engine/go.php?url=") {
+        var queryItems: Set<URLQueryItem> = []
+
+        let range = path.index(path.startIndex, offsetBy: "/engine/go.php?url=".count)..<path.endIndex
+
+        queryItems.insert(URLQueryItem(name: "url", value: String(path[range])))
+
+        let _ = try await apiClient.requestAsync("/engine/go.php", queryItems: queryItems, headers: getHeaders(url), delegate: delegate)
+      }
+
+      semaphore.signal()
+    }
+
+    semaphore.wait()
+
+    return delegate.lastLocation
   }
 
   public func getLetters() throws -> [[String: String]] {
@@ -320,7 +365,21 @@ open class AudioBooApiService {
       }
     }
 
-    return result
+    return result.map { item in
+      if item.file.hasPrefix("/engine/go.php") {
+        do {
+          let location = try getRedirectLocation(path: item.file, url: url)
+
+          return BooTrack2(title: item.title, file: location ?? "")
+        }
+        catch {
+          return item
+        }
+      }
+      else {
+        return item
+      }
+    }
   }
 
   public func search(_ query: String, page: Int=1) async throws -> [[String: String]] {
@@ -376,7 +435,7 @@ open class AudioBooApiService {
 
     var cookie: String = ""
 
-    let response = try apiClient.request(headers: headers)
+    let _ = try apiClient.request(headers: headers)
 
     if let cookies = HTTPCookieStorage.shared.cookies {
       for c in cookies {
@@ -395,7 +454,7 @@ open class AudioBooApiService {
     let response = try await apiClient.requestAsync(path)
 
     if let data = response.data {
-      document = try data.toDocument(encoding: .utf8)
+      document = try data.toDocument()
     }
 
     return document
