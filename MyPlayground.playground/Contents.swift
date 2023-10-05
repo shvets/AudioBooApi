@@ -7,8 +7,6 @@ let SiteUrl = "https://audioboo.org"
 
 let apiClient = ApiClient(URL(string: SiteUrl)!)
 
-print(apiClient)
-
 class DelegateToHandle302: NSObject, URLSessionTaskDelegate {
     var lastLocation: String? = nil
     

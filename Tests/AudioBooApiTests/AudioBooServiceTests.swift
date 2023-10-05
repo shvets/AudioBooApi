@@ -112,6 +112,12 @@ class AudioBooServiceTests: XCTestCase {
 
     XCTAssertNotNil(list)
     XCTAssert(list.count > 0)
+
+    let item = list.first
+
+    let newPath = try await subject.convert(path: item!.file, referer: url)
+
+    print(newPath)
   }
 
   func testSearch() async throws {

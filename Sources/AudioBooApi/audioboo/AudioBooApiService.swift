@@ -45,26 +45,18 @@ open class AudioBooApiService {
     return headers
   }
 
-  func getRedirectLocation(path: String, url: String) throws -> String? {
+  func getRedirectLocation(path: String, referer: String) async throws -> String? {
     let delegate = DelegateToHandle302()
 
-    let semaphore = DispatchSemaphore(value: 0)
+    if path.hasPrefix("/engine/go.php?url=") {
+      var queryItems: Set<URLQueryItem> = []
 
-    Task {
-      if path.hasPrefix("/engine/go.php?url=") {
-        var queryItems: Set<URLQueryItem> = []
+      let range = path.index(path.startIndex, offsetBy: "/engine/go.php?url=".count)..<path.endIndex
 
-        let range = path.index(path.startIndex, offsetBy: "/engine/go.php?url=".count)..<path.endIndex
+      queryItems.insert(URLQueryItem(name: "url", value: String(path[range])))
 
-        queryItems.insert(URLQueryItem(name: "url", value: String(path[range])))
-
-        let _ = try await apiClient.requestAsync("/engine/go.php", queryItems: queryItems, headers: getHeaders(url), delegate: delegate)
-      }
-
-      semaphore.signal()
+      let _ = try await apiClient.requestAsync("/engine/go.php", queryItems: queryItems, headers: getHeaders(referer), delegate: delegate)
     }
-
-    semaphore.wait()
 
     return delegate.lastLocation
   }
@@ -365,20 +357,20 @@ open class AudioBooApiService {
       }
     }
 
-    return result.map { item in
-      if item.file.hasPrefix("/engine/go.php") {
-        do {
-          let location = try getRedirectLocation(path: item.file, url: url)
+    return result
+  }
 
-          return BooTrack2(title: item.title, file: location ?? "")
-        }
-        catch {
-          return item
-        }
+  public func convert(path: String, referer: String) async throws -> String? {
+    if path.hasPrefix("/engine/go.php") {
+      do {
+        return try await getRedirectLocation(path: path, referer: referer)
       }
-      else {
-        return item
+      catch {
+        return path
       }
+    }
+    else {
+      return path
     }
   }
 
