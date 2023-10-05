@@ -2,6 +2,27 @@ import Foundation
 import SwiftSoup
 import SimpleHttpClient
 
+class UnsafeTask<T> {
+  let semaphore = DispatchSemaphore(value: 0)
+
+  private var result: T?
+
+  init(block: @escaping () async -> T) {
+    Task {
+      result = await block()
+      semaphore.signal()
+    }
+  }
+
+  func get() -> T {
+    if let result = result { return result }
+
+    semaphore.wait()
+
+    return result!
+  }
+}
+
 class DelegateToHandle302: NSObject, URLSessionTaskDelegate {
   var lastLocation: String? = nil
 
@@ -347,7 +368,6 @@ open class AudioBooApiService {
             //.replacingOccurrences(of: " ", with: "")
             //.replacingOccurrences(of: "\n", with: "")a
 
-
             if let data = body.data(using: .utf8),
                let items = try apiClient.decode(data, to: [BooTrack2].self) {
               result = items
@@ -360,18 +380,19 @@ open class AudioBooApiService {
     return result
   }
 
-  public func convert(path: String, referer: String) async throws -> String? {
-    if path.hasPrefix("/engine/go.php") {
-      do {
-        return try await getRedirectLocation(path: path, referer: referer)
+  public func convert(path: String, referer: String) -> String {
+    UnsafeTask {
+      if path.hasPrefix("/engine/go.php") {
+        do {
+          return try await self.getRedirectLocation(path: path, referer: referer)!
+        }
+        catch (let error) {
+          print(error)
+        }
       }
-      catch {
-        return path
-      }
-    }
-    else {
+
       return path
-    }
+    }.get()
   }
 
   public func search(_ query: String, page: Int=1) async throws -> [[String: String]] {

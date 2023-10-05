@@ -115,7 +115,7 @@ class AudioBooServiceTests: XCTestCase {
 
     let item = list.first
 
-    let newPath = try await subject.convert(path: item!.file, referer: url)
+    let newPath = subject.convert(path: item!.file, referer: url)
 
     print(newPath)
   }
