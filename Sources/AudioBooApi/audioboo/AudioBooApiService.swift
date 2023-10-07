@@ -27,7 +27,7 @@ class DelegateToHandle302: NSObject, URLSessionTaskDelegate {
   var lastLocation: String? = nil
 
   func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
-                  newRequest request: URLRequest) -> URLRequest? {
+                  newRequest request: URLRequest) async -> URLRequest? {
     lastLocation = response.allHeaderFields["Location"] as? String
 
     return request
@@ -66,7 +66,7 @@ open class AudioBooApiService {
     return headers
   }
 
-  func getRedirectLocation(path: String, referer: String) throws -> String? {
+  func getRedirectLocation(path: String, referer: String) async throws -> String? {
     let delegate = DelegateToHandle302()
 
     if path.hasPrefix("/engine/go.php?url=") {
@@ -76,7 +76,7 @@ open class AudioBooApiService {
 
       queryItems.insert(URLQueryItem(name: "url", value: String(path[range])))
 
-      let _ = try apiClient.request("/engine/go.php", queryItems: queryItems, headers: getHeaders(referer), delegate: delegate)
+      let _ = try await apiClient.requestAsync("/engine/go.php", queryItems: queryItems, headers: getHeaders(referer), delegate: delegate)
     }
 
     return delegate.lastLocation
@@ -381,10 +381,10 @@ open class AudioBooApiService {
   }
 
   public func convert(path: String, referer: String) -> String {
-    //UnsafeTask {
+    UnsafeTask {
       if path.hasPrefix("/engine/go.php") {
         do {
-          return try getRedirectLocation(path: path, referer: referer)!
+          return try await self.getRedirectLocation(path: path, referer: referer)!
         }
         catch (let error) {
           print(error)
@@ -392,7 +392,7 @@ open class AudioBooApiService {
       }
 
       return path
-//    }.get()
+    }.get()
   }
 
   public func search(_ query: String, page: Int=1) async throws -> [[String: String]] {

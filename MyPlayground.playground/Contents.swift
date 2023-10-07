@@ -11,7 +11,7 @@ class DelegateToHandle302: NSObject, URLSessionTaskDelegate {
     var lastLocation: String? = nil
     
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
-                    newRequest request: URLRequest) -> URLRequest? {
+                    newRequest request: URLRequest) async -> URLRequest? {
       lastLocation = response.allHeaderFields["Location"] as? String
         
       //print("lastLocation: \(lastLocation)")
@@ -38,8 +38,8 @@ var queryItems: Set<URLQueryItem> = []
 
 queryItems.insert(URLQueryItem(name: "url", value: "aHR0cDovL2FyY2hpdmUub3JnL2Rvd25sb2FkLzFfMjAyMzA5MzBfMjAyMzA5MzBfMTgwNS8xLm1wMw=="))
 
-//Task.init {
-    let response = try apiClient.request(path, queryItems: queryItems, headers: headers)
+Task {
+    let response = try await apiClient.requestAsync(path, queryItems: queryItems, headers: headers)
     
     print(response.response.url)
-//}
+}
