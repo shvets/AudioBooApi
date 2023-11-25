@@ -27,10 +27,10 @@ class DelegateToHandle302: NSObject, URLSessionTaskDelegate {
   var lastLocation: String? = nil
 
   func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
-                  newRequest request: URLRequest) async -> URLRequest? {
+                  newRequest request: URLRequest) -> URLRequest? {
     lastLocation = response.allHeaderFields["Location"] as? String
 
-    return request
+    return nil
   }
 }
 
@@ -66,21 +66,41 @@ open class AudioBooApiService {
     return headers
   }
 
-  func getRedirectLocation(path: String, referer: String) async throws -> String? {
-    let delegate = DelegateToHandle302()
+  func getRedirectLocation(path: String, referer: String) throws -> String? {
+    //let delegate = DelegateToHandle302()
 
-    if path.hasPrefix("/engine/go.php?url=") {
+    //if path.hasPrefix("/engine/go.php?url=") {
       var queryItems: Set<URLQueryItem> = []
 
       let range = path.index(path.startIndex, offsetBy: "/engine/go.php?url=".count)..<path.endIndex
 
       queryItems.insert(URLQueryItem(name: "url", value: String(path[range])))
 
-      let _ = try await apiClient.requestAsync("/engine/go.php", queryItems: queryItems, headers: getHeaders(referer), delegate: delegate)
-    }
+      let response = try apiClient.request("/engine/go.php", queryItems: queryItems, headers: getHeaders(referer))
+          //, delegate: delegate)
 
-    return delegate.lastLocation
+      //print(response.response.url)
+
+      return response.response.url?.absoluteString
+    //}
+
+    //return delegate.lastLocation
+    //return nil
   }
+
+//  func getData(path: String, referer: String) async throws -> ApiResponse? {
+//    if path.hasPrefix("/engine/go.php?url=") {
+//      var queryItems: Set<URLQueryItem> = []
+//
+//      let range = path.index(path.startIndex, offsetBy: "/engine/go.php?url=".count)..<path.endIndex
+//
+//      queryItems.insert(URLQueryItem(name: "url", value: String(path[range])))
+//
+//      let _ = try await apiClient.request("/engine/go.php", queryItems: queryItems, headers: getHeaders(referer), delegate: delegate)
+//    }
+//
+//    return try apiClient.request(path, queryItems: getQueryItems(), headers: headers)
+//  }
 
   public func getLetters() throws -> [[String: String]] {
     var result = [[String: String]]()
