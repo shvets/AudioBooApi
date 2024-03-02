@@ -5,18 +5,18 @@ import SimpleHttpClient
 @testable import AudioBooApi
 
 class RedirectTests: XCTestCase {
-  class DelegateToHandle302: NSObject, URLSessionTaskDelegate {
-    var lastLocation: String? = nil
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
-                    newRequest request: URLRequest) async -> URLRequest? {
-      lastLocation = response.allHeaderFields["Location"] as? String
-
-      print("lastLocation: \(lastLocation)")
-
-      return nil
-    }
-  }
+//  class DelegateToHandle302: NSObject, URLSessionTaskDelegate {
+//    var lastLocation: String? = nil
+//
+//    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
+//                    newRequest request: URLRequest) async -> URLRequest? {
+//      lastLocation = response.allHeaderFields["Location"] as? String
+//
+//      //print("lastLocation: \(lastLocation)")
+//
+//      return nil
+//    }
+//  }
 
   func testRedirect() throws {
     let delegate = DelegateToHandle302()
@@ -37,9 +37,9 @@ class RedirectTests: XCTestCase {
 
     let result = try apiClient.request(path, queryItems: queryItems, headers: headers, delegate: delegate)
 
-    print(result)
+    //print(result)
 
-    print(result.response.headers.value(for: "Location"))
+    print(result.response.allHeaderFields["Location"])
 
 //      let result = try subject.getLetters()
 //

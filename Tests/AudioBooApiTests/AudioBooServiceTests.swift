@@ -1,4 +1,5 @@
 import XCTest
+import SimpleHttpClient
 
 @testable import AudioBooApi
 
@@ -102,22 +103,23 @@ class AudioBooServiceTests: XCTestCase {
     //print(file)
   }
 
-  func testGetAudioTracksNew() async throws {
-    //let url = "https://audioboo.org/klassika/54429-o-genri-poslednij-list.html"
+  func testGetAudioTracksNew() throws {
     let url = "https://audioboo.org/proza/71729-holder-njensi-vne-dvenadcati-shagov-ili-leto-s-anonimnymi-alkogolikami.html"
 
     let list = try subject.getAudioTracksNew(url)
 
-    print(try list.prettify())
+    //print(try list.prettify())
 
     XCTAssertNotNil(list)
     XCTAssert(list.count > 0)
 
     let item = list.first
 
-    let newPath = subject.convert(path: item!.file, referer: url)
+    let newPath = try subject.convert(path: item!.file, referer: url)
 
-    print(newPath)
+    if let newPath = newPath {
+      print(newPath)
+    }
   }
 
   func testSearch() async throws {

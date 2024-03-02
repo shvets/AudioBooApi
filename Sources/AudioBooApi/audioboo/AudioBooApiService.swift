@@ -2,37 +2,26 @@ import Foundation
 import SwiftSoup
 import SimpleHttpClient
 
-class UnsafeTask<T> {
-  let semaphore = DispatchSemaphore(value: 0)
-
-  private var result: T?
-
-  init(block: @escaping () async -> T) {
-    Task {
-      result = await block()
-      semaphore.signal()
-    }
-  }
-
-  func get() -> T {
-    if let result = result { return result }
-
-    semaphore.wait()
-
-    return result!
-  }
-}
-
-class DelegateToHandle302: NSObject, URLSessionTaskDelegate {
-  var lastLocation: String? = nil
-
-  func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
-                  newRequest request: URLRequest) -> URLRequest? {
-    lastLocation = response.allHeaderFields["Location"] as? String
-
-    return nil
-  }
-}
+//class UnsafeTask<T> {
+//  let semaphore = DispatchSemaphore(value: 0)
+//
+//  private var result: T?
+//
+//  init(block: @escaping () async -> T) {
+//    Task {
+//      result = await block()
+//      semaphore.signal()
+//    }
+//  }
+//
+//  func get() -> T {
+//    if let result = result { return result }
+//
+//    semaphore.wait()
+//
+//    return result!
+//  }
+//}
 
 open class AudioBooApiService {
   public static let SiteUrl = "https://audioboo.org"
@@ -40,6 +29,8 @@ open class AudioBooApiService {
 
   let apiClient = ApiClient(URL(string: SiteUrl)!)
   let archiveClient = ApiClient(URL(string: ArchiveUrl)!)
+
+  let delegate = DelegateToHandle302()
 
   public init() {}
 
@@ -66,27 +57,28 @@ open class AudioBooApiService {
     return headers
   }
 
-  func getRedirectLocation(path: String, referer: String) throws -> String? {
-    //let delegate = DelegateToHandle302()
-
-    //if path.hasPrefix("/engine/go.php?url=") {
-      var queryItems: Set<URLQueryItem> = []
-
-      let range = path.index(path.startIndex, offsetBy: "/engine/go.php?url=".count)..<path.endIndex
-
-      queryItems.insert(URLQueryItem(name: "url", value: String(path[range])))
-
-      let response = try apiClient.request("/engine/go.php", queryItems: queryItems, headers: getHeaders(referer))
-          //, delegate: delegate)
-
-      //print(response.response.url)
-
-      return response.response.url?.absoluteString
-    //}
-
-    //return delegate.lastLocation
-    //return nil
-  }
+//  func getRedirectLocation(path: String, referer: String) throws -> String? {
+//    //let delegate = DelegateToHandle302()
+//
+//    //if path.hasPrefix("/engine/go.php?url=") {
+//      var queryItems: Set<URLQueryItem> = []
+//
+//      let range = path.index(path.startIndex, offsetBy: "/engine/go.php?url=".count)..<path.endIndex
+//
+//      queryItems.insert(URLQueryItem(name: "url", value: String(path[range])))
+//
+//      let response = try apiClient.request("/engine/go.php", queryItems: queryItems, headers: getHeaders(referer),
+//          delegate: delegate)
+//          //, delegate: delegate)
+//
+//      //print(response.response.url)
+//
+//      return response.response.url?.absoluteString
+//    //}
+//
+//    //return delegate.lastLocation
+//    //return nil
+//  }
 
 //  func getData(path: String, referer: String) async throws -> ApiResponse? {
 //    if path.hasPrefix("/engine/go.php?url=") {
@@ -400,19 +392,51 @@ open class AudioBooApiService {
     return result
   }
 
-  public func convert(path: String, referer: String) -> String {
-    UnsafeTask {
-      if path.hasPrefix("/engine/go.php") {
-        do {
-          return try await self.getRedirectLocation(path: path, referer: referer)!
-        }
-        catch (let error) {
-          print(error)
-        }
-      }
+//  public func convert0(path: String, referer: String) -> String {
+//    UnsafeTask {
+//      if path.hasPrefix("/engine/go.php") {
+//        do {
+//          return try await self.getRedirectLocation(path: path, referer: referer)!
+//        }
+//        catch (let error) {
+//          print(error)
+//        }
+//      }
+//
+//      return path
+//    }.get()
+//  }
 
-      return path
-    }.get()
+  public func convert(path: String, referer: String) throws -> String? {
+    let delegate = DelegateToHandle302()
+
+    //let path = "/engine/go.php"
+
+    if path.hasPrefix("/engine/go.php") {
+      var queryItems: Set<URLQueryItem> = []
+
+      let range = path.index(path.startIndex, offsetBy: "/engine/go.php?url=".count)..<path.endIndex
+
+      queryItems.insert(URLQueryItem(name: "url", value: String(path[range])))
+
+      //queryItems.insert(URLQueryItem(name: "url", value: "aHR0cDovL2FyY2hpdmUub3JnL2Rvd25sb2FkLzFfMjAyMzA5MzBfMjAyMzA5MzBfMTgwNS8xLm1wMw=="))
+
+      queryItems.insert(URLQueryItem(name: "url", value: String(path[range])))
+
+      //let response = try apiClient.request("/engine/go.php", queryItems: queryItems, headers: getHeaders(referer))
+
+//      var headers: Set<HttpHeader> = []
+//
+//      headers.insert(HttpHeader(field: "Referer", value: referer))
+
+      var apiClient = ApiClient(URL(string: AudioBooApiService.SiteUrl)!)
+
+      let result = try apiClient.request("/engine/go.php", queryItems: queryItems, headers: getHeaders(referer), delegate: delegate)
+
+      return result.response.allHeaderFields["Location"] as? String
+    }
+
+    return nil
   }
 
   public func search(_ query: String, page: Int=1) async throws -> [[String: String]] {
