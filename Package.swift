@@ -5,9 +5,9 @@ import PackageDescription
 let package = Package(
   name: "AudioBooApi",
   platforms: [
-    .macOS(.v13),
-    .iOS(.v16),
-    .tvOS(.v16)
+    .macOS(.v14),
+    .iOS(.v17),
+    .tvOS(.v17)
   ],
   products: [
     .library(name: "AudioBooApi", targets: ["AudioBooApi"])

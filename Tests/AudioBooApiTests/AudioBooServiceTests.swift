@@ -31,13 +31,23 @@ class AudioBooServiceTests: XCTestCase {
   func testGetPerformersLetters() throws {
     let letters = try subject.getPerformersLetters()
 
+    print(letters)
     XCTAssert(letters.count > 0)
   }
 
   func testGetPerformers() throws {
     let performers = try subject.getPerformers()
 
+    print(performers)
     XCTAssert(performers.count > 0)
+  }
+
+  func testGetCookie() async throws {
+    let result = try subject.getCookie()
+
+    print(try result.prettify())
+
+    //XCTAssert(result.count > 0)
   }
 
   func testGetAllBooks() async throws {

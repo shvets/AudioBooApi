@@ -31,9 +31,9 @@ class RedirectTests: XCTestCase {
 
     headers.insert(HttpHeader(field: "Referer", value: "https://audioboo.org/proza/71729-holder-njensi-vne-dvenadcati-shagov-ili-leto-s-anonimnymi-alkogolikami.html"))
 
-    var SiteUrl = "https://audioboo.org"
+    let SiteUrl = "https://audioboo.org"
 
-    var apiClient = ApiClient(URL(string: SiteUrl)!)
+    let apiClient = ApiClient(URL(string: SiteUrl)!)
 
     let result = try apiClient.request(path, queryItems: queryItems, headers: headers, delegate: delegate)
 

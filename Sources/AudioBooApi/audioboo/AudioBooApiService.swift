@@ -429,7 +429,7 @@ open class AudioBooApiService {
 //
 //      headers.insert(HttpHeader(field: "Referer", value: referer))
 
-      var apiClient = ApiClient(URL(string: AudioBooApiService.SiteUrl)!)
+      let apiClient = ApiClient(URL(string: AudioBooApiService.SiteUrl)!)
 
       let result = try apiClient.request("/engine/go.php", queryItems: queryItems, headers: getHeaders(referer), delegate: delegate)
 
@@ -486,8 +486,8 @@ open class AudioBooApiService {
 
   func getCookie() throws -> String?  {
     let headers: Set<HttpHeader> = [
-      HttpHeader(field: "user-agent", value:
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36")
+      HttpHeader(field: "User-Agent", value:
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
     ]
 
     var cookie: String = ""
@@ -508,6 +508,18 @@ open class AudioBooApiService {
   public func getDocument(_ path: String = "") async throws -> Document? {
     var document: Document? = nil
 
+//    let cookie = try getCookie()
+//    //print(cookie)
+//
+//    var headers: Set<HttpHeader> = []
+//    headers.insert(HttpHeader(field: "content-type", value: "application/x-www-form-urlencoded; charset=UTF-8"))
+//    headers.insert(HttpHeader(field: "cookie", value: cookie!))
+//    
+//    var queryItems: Set<URLQueryItem> = []
+//    //queryItems.insert(URLQueryItem(name: "mod", value: "search"))
+//    
+//    let response = try await apiClient.requestAsync(path, method: .get, queryItems: queryItems, headers: headers)
+    
     let response = try await apiClient.requestAsync(path)
 
     if let data = response.data {
