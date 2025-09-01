@@ -20,7 +20,7 @@ swift -I .build/debug -L .build/debug -lAudioBooApi
 
 
 ```bash
-git tag 1.0.10
+git tag 1.0.11
 git push --tags
 ```
 

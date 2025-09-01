@@ -252,7 +252,7 @@ open class AudioBooApiService {
           thumb = AudioBooApiService.SiteUrl + thumb
         }
 
-        result.append(["type": "book", "id": href, "name": name, "thumb": thumb])
+        result.append(BookItem(value: ["type": "book", "id": href, "name": name, "thumb": thumb]))
       }
     }
 
@@ -289,7 +289,7 @@ open class AudioBooApiService {
 
         //let rating = try elements[0].select("div[class=rating] ul li[class=current-rating]").text()
 
-        result.append(["type": "book", "id": href, "name": name, "thumb": AudioBooApiService.SiteUrl + thumb])
+        result.append(BookItem(value: ["type": "book", "id": href, "name": name, "thumb": AudioBooApiService.SiteUrl + thumb]))
       }
     }
 

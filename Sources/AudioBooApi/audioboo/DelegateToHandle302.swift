@@ -1,6 +1,6 @@
 import Foundation
 
-class DelegateToHandle302: NSObject, URLSessionTaskDelegate {
+final class DelegateToHandle302: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
   var lastLocation: String? = nil
 
   func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,

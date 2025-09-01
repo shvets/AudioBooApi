@@ -3,7 +3,10 @@ import SimpleHttpClient
 import Codextended
 
 extension AudioBooApiService {
-  public typealias BookItem = [String: String]
+  public struct BookItem: Codable, Sendable {
+    public let value: [String: String]
+  }
+
 
   public struct PersonName {
     public let name: String

@@ -85,7 +85,7 @@ class AudioBooServiceTests: XCTestCase {
 
       let books = try await self.subject.getBooks(url)
 
-      if let bookId = books[0]["id"] {
+      if let bookId = books[0].value["id"] {
         let result = try await self.subject.getPlaylistUrls(bookId)
 
         print(try result.prettify())
